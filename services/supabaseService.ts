@@ -5,9 +5,9 @@ import { CONFIG } from '../config';
 
 let supabase: SupabaseClient | null = null;
 
-if (CONFIG.supabase.url && CONFIG.supabase.anonKey) {
+if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) {
   try {
-    supabase = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+    supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
   } catch (err) {
     console.error("Failed to initialize Supabase client:", err);
   }
@@ -41,7 +41,6 @@ export const fetchPortfolioFromSupabase = async (): Promise<{ assets: Record<Ass
 export const saveAssetToSupabase = async (asset: Asset) => {
   if (!supabase) return;
   try {
-    // Fix: Using asset.currentPrice instead of asset.current_price to match the Asset interface
     await supabase.from('portfolio_assets').upsert({
       asset_type: asset.type,
       amount: asset.amount,

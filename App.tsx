@@ -36,21 +36,21 @@ const App: React.FC = () => {
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const [portfolio, setPortfolio] = useState<PortfolioData>({
-    monthlyContribution: CONFIG.portfolio.monthlyContribution,
+    monthlyContribution: CONFIG.MONTHLY_CONTRIBUTION,
     telegramConfig: { 
-      botToken: CONFIG.telegram.defaultBotToken, 
-      chatId: CONFIG.telegram.defaultChatId 
+      botToken: CONFIG.DEFAULT_BOT_TOKEN, 
+      chatId: CONFIG.DEFAULT_CHAT_ID 
     },
     assets: {
-      GOLD: { type: 'GOLD', label: 'Vàng DOJI', amount: 0.5, currentPrice: 85000000, targetAllocation: CONFIG.portfolio.defaultAllocation },
-      USDT: { type: 'USDT', label: 'USDT Binance', amount: 1700, currentPrice: 25400, targetAllocation: CONFIG.portfolio.defaultAllocation },
-      SAVINGS: { type: 'SAVINGS', label: 'Tiết kiệm VND', amount: 45000000, currentPrice: 1, targetAllocation: CONFIG.portfolio.defaultAllocation }
+      GOLD: { type: 'GOLD', label: 'Vàng DOJI', amount: 0.5, currentPrice: 85000000, targetAllocation: CONFIG.DEFAULT_ALLOCATION },
+      USDT: { type: 'USDT', label: 'USDT Binance', amount: 1700, currentPrice: 25400, targetAllocation: CONFIG.DEFAULT_ALLOCATION },
+      SAVINGS: { type: 'SAVINGS', label: 'Tiết kiệm VND', amount: 45000000, currentPrice: 1, targetAllocation: CONFIG.DEFAULT_ALLOCATION }
     }
   });
 
   useEffect(() => {
     const init = async () => {
-      if (!CONFIG.supabase.url || !CONFIG.supabase.anonKey) { 
+      if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) { 
         setIsCloudConfigured(false); 
         return; 
       }
@@ -93,9 +93,9 @@ const App: React.FC = () => {
 
     const alerts: string[] = [];
     data.forEach(item => {
-      const targetPct = (CONFIG.portfolio.defaultAllocation * 100);
+      const targetPct = (CONFIG.DEFAULT_ALLOCATION * 100);
       const deviation = Math.abs(item.actualPct - targetPct);
-      if (deviation > (CONFIG.portfolio.rebalanceThreshold * 100)) {
+      if (deviation > (CONFIG.REBALANCE_THRESHOLD * 100)) {
         alerts.push(`⚠️ ${item.name} lệch ${(item.actualPct).toFixed(1)}% (Mục tiêu ${targetPct.toFixed(1)}%) - Cần tái cân bằng!`);
       }
     });
@@ -295,7 +295,7 @@ const App: React.FC = () => {
           <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
               <h3 className="font-bold text-slate-800">Quản lý Số dư</h3>
-              <p className="text-[10px] font-bold text-indigo-500 uppercase">Target: {(CONFIG.portfolio.defaultAllocation * 100).toFixed(1)}% Mỗi loại</p>
+              <p className="text-[10px] font-bold text-indigo-500 uppercase">Target: {(CONFIG.DEFAULT_ALLOCATION * 100).toFixed(1)}% Mỗi loại</p>
             </div>
             <div className="divide-y divide-slate-50">
               {(Object.values(portfolio.assets) as Asset[]).map((asset) => (

@@ -3,19 +3,18 @@ import { GoogleGenAI } from "@google/genai";
 import { PortfolioData, MarketPriceUpdate } from "../types";
 import { CONFIG } from "../config";
 
-// Fix: Always use process.env.API_KEY directly when initializing the client
-const ai = new GoogleGenAI({ apiKey: (process.env as any).API_KEY });
+// Always use process.env.API_KEY directly
+const ai = new GoogleGenAI({ apiKey: CONFIG.API_KEY });
 
 export const fetchMarketPrices = async (): Promise<MarketPriceUpdate> => {
   const response = await ai.models.generateContent({
-    model: CONFIG.gemini.model,
+    model: CONFIG.GEMINI_MODEL,
     contents: "Find the current price of SJC gold at DOJI Vietnam and the current USDT/VND rate on Binance P2P. Return the numbers only in a clear format.",
     config: {
       tools: [{ googleSearch: {} }],
     },
   });
 
-  // Fix: Access response.text as a property, not a method
   const text = response.text || "";
   
   // Basic parsing logic
@@ -50,10 +49,9 @@ export const generateTelegramReport = async (portfolio: PortfolioData, rebalance
   `;
 
   const response = await ai.models.generateContent({
-    model: CONFIG.gemini.model,
+    model: CONFIG.GEMINI_MODEL,
     contents: prompt,
   });
 
-  // Fix: Access response.text as a property
   return response.text || "Failed to generate report.";
 };

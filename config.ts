@@ -1,20 +1,12 @@
 
 export const CONFIG = {
-  gemini: {
-    model: 'gemini-3-flash-preview',
-  },
-  supabase: {
-    url: (process.env as any).SUPABASE_URL || '',
-    anonKey: (process.env as any).SUPABASE_ANON_KEY || '',
-  },
-  portfolio: {
-    monthlyContribution: 12000000,
-    defaultAllocation: 1 / 3,
-    rebalanceThreshold: 0.05, // 5%
-  },
-  telegram: {
-    // Các giá trị mặc định nếu cần
-    defaultBotToken: '',
-    defaultChatId: '',
-  }
+  GEMINI_MODEL: 'gemini-3-flash-preview',
+  API_KEY:'AIzaSyDhgaqfa_cDWdEpl-nqIGtcdD4YotZgI-Q',
+  SUPABASE_URL: (process.env as any).SUPABASE_URL || 'https://evyoqbkdnneiqmamwkll.supabase.co',
+  SUPABASE_ANON_KEY: (process.env as any).SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2eW9xYmtkbm5laXFtYW13a2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODU1NDQsImV4cCI6MjA4NTU2MTU0NH0.0bFrMYG0dwJdsLeG096u1L18oBh6BaQpQ_J8kcKojUI',
+  MONTHLY_CONTRIBUTION: 12000000,
+  DEFAULT_ALLOCATION: 1 / 3,
+  REBALANCE_THRESHOLD: 0.05, // 5%
+  DEFAULT_BOT_TOKEN: '8459324070:AAE8x2nNGt2c2RVgUCP-F1KcY0SInFOZeqA',
+  DEFAULT_CHAT_ID: '6305931650',
 };
