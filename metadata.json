@@ -1,0 +1,5 @@
+{
+  "name": "WealthBalance AI",
+  "description": "A smart investment monitoring tool that tracks Gold (DOJI), USDT (Binance), and Savings, providing rebalancing alerts and Telegram report generation using Gemini AI.",
+  "requestFramePermissions": []
+}
