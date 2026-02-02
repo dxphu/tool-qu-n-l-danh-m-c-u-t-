@@ -1,9 +1,8 @@
 
 export const CONFIG = {
   GEMINI_MODEL: 'gemini-3-flash-preview',
-  API_KEY:'AIzaSyDhgaqfa_cDWdEpl-nqIGtcdD4YotZgI-Q',
-  SUPABASE_URL: (process.env as any).SUPABASE_URL || 'https://evyoqbkdnneiqmamwkll.supabase.co',
-  SUPABASE_ANON_KEY: (process.env as any).SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2eW9xYmtkbm5laXFtYW13a2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODU1NDQsImV4cCI6MjA4NTU2MTU0NH0.0bFrMYG0dwJdsLeG096u1L18oBh6BaQpQ_J8kcKojUI',
+  SUPABASE_URL: (process.env as any).SUPABASE_URL || '',
+  SUPABASE_ANON_KEY: (process.env as any).SUPABASE_ANON_KEY || '',
   MONTHLY_CONTRIBUTION: 12000000,
   DEFAULT_ALLOCATION: 1 / 3,
   REBALANCE_THRESHOLD: 0.05, // 5%

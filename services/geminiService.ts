@@ -3,33 +3,39 @@ import { GoogleGenAI } from "@google/genai";
 import { PortfolioData, MarketPriceUpdate } from "../types";
 import { CONFIG } from "../config";
 
-// Always use process.env.API_KEY directly
-const ai = new GoogleGenAI({ apiKey: CONFIG.API_KEY });
+// The API key must be obtained exclusively from the environment variable process.env.API_KEY
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const fetchMarketPrices = async (): Promise<MarketPriceUpdate> => {
-  const response = await ai.models.generateContent({
-    model: CONFIG.GEMINI_MODEL,
-    contents: "Find the current price of SJC gold at DOJI Vietnam and the current USDT/VND rate on Binance P2P. Return the numbers only in a clear format.",
-    config: {
-      tools: [{ googleSearch: {} }],
-    },
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: CONFIG.GEMINI_MODEL,
+      contents: "Find the current price of SJC gold at DOJI Vietnam and the current USDT/VND rate on Binance P2P. Return the numbers only in a clear format.",
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+    });
 
-  const text = response.text || "";
-  
-  // Basic parsing logic
-  const goldMatch = text.match(/(\d{2,3}[,.]\d{3}[,.]\d{3}|\d{2,3}[,.]\d{3})/g);
-  const usdtMatch = text.match(/2[456][,.]\d{3}/g);
+    // Access .text as a property
+    const text = response.text || "";
+    
+    // Basic parsing logic with fallback for common patterns
+    const goldMatch = text.match(/(\d{2,3}[,.]\d{3}[,.]\d{3}|\d{2,3}[,.]\d{3})/g);
+    const usdtMatch = text.match(/2[456][,.]\d{3}/g);
 
-  const goldPrice = goldMatch ? parseInt(goldMatch[0].replace(/[,.]/g, '')) : 85000000;
-  const usdtPrice = usdtMatch ? parseInt(usdtMatch[0].replace(/[,.]/g, '')) : 25400;
+    const goldPrice = goldMatch ? parseInt(goldMatch[0].replace(/[,.]/g, '')) : 85000000;
+    const usdtPrice = usdtMatch ? parseInt(usdtMatch[0].replace(/[,.]/g, '')) : 25400;
 
-  return {
-    goldPrice,
-    usdtPrice,
-    lastUpdated: new Date().toLocaleString('vi-VN'),
-    sourceNotes: text
-  };
+    return {
+      goldPrice,
+      usdtPrice,
+      lastUpdated: new Date().toLocaleString('vi-VN'),
+      sourceNotes: text
+    };
+  } catch (error) {
+    console.error("Gemini Market Price Error:", error);
+    throw error;
+  }
 };
 
 export const generateTelegramReport = async (portfolio: PortfolioData, rebalanceAlerts: string[]): Promise<string> => {

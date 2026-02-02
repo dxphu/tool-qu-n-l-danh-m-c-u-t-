@@ -50,31 +50,37 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const init = async () => {
-      if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) { 
-        setIsCloudConfigured(false); 
-        return; 
-      }
-
-      setSyncing(true);
-      const { assets, telegram } = await fetchPortfolioFromSupabase();
-      
-      setPortfolio(prev => {
-        const newAssets = { ...prev.assets };
-        if (assets) {
-          (Object.keys(assets) as AssetType[]).forEach(type => {
-            if (newAssets[type]) {
-              newAssets[type].amount = assets[type].amount ?? newAssets[type].amount;
-              newAssets[type].currentPrice = assets[type].currentPrice ?? newAssets[type].currentPrice;
-            }
-          });
+      try {
+        if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) { 
+          setIsCloudConfigured(false); 
+          return; 
         }
-        return { 
-          ...prev, 
-          assets: newAssets,
-          telegramConfig: telegram || prev.telegramConfig 
-        };
-      });
-      setSyncing(false);
+
+        setSyncing(true);
+        const { assets, telegram } = await fetchPortfolioFromSupabase();
+        
+        setPortfolio(prev => {
+          const newAssets = { ...prev.assets };
+          if (assets) {
+            (Object.keys(assets) as AssetType[]).forEach(type => {
+              if (newAssets[type]) {
+                newAssets[type].amount = assets[type].amount ?? newAssets[type].amount;
+                newAssets[type].currentPrice = assets[type].currentPrice ?? newAssets[type].currentPrice;
+              }
+            });
+          }
+          return { 
+            ...prev, 
+            assets: newAssets,
+            telegramConfig: telegram || prev.telegramConfig 
+          };
+        });
+      } catch (error) {
+        console.error("Initialization failed:", error);
+        setStatusMsg({ type: 'error', text: 'Không thể kết nối cơ sở dữ liệu. Đang dùng dữ liệu cục bộ.' });
+      } finally {
+        setSyncing(false);
+      }
     };
     init();
   }, []);
@@ -116,8 +122,14 @@ const App: React.FC = () => {
       setPortfolio(prev => ({ ...prev, assets: updatedAssets }));
       await saveAllAssetsToSupabase(updatedAssets);
       setLastUpdate(result.lastUpdated);
-    } catch (error) { console.error(error); } 
-    finally { setPricesLoading(false); setSyncing(false); }
+      setStatusMsg({ type: 'success', text: 'Cập nhật giá thành công!' });
+    } catch (error) { 
+      console.error(error); 
+      setStatusMsg({ type: 'error', text: 'Lỗi cập nhật giá. Vui lòng kiểm tra API Key.' });
+    } finally { 
+      setPricesLoading(false); 
+      setSyncing(false); 
+    }
   };
 
   const handleManualEdit = async (type: AssetType, field: 'amount' | 'currentPrice', val: number) => {
@@ -142,8 +154,12 @@ const App: React.FC = () => {
     try {
       const report = await generateTelegramReport(portfolio, portfolioStats.alerts);
       setReportText(report);
-    } catch (error) { console.error(error); } 
-    finally { setLoading(false); }
+    } catch (error) { 
+      console.error(error);
+      setStatusMsg({ type: 'error', text: 'Không thể tạo báo cáo. Vui lòng thử lại.' });
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleSendToTelegram = async () => {
