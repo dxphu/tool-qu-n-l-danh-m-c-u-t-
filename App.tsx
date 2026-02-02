@@ -9,8 +9,6 @@ import {
   Info,
   ChevronRight,
   Loader2,
-  ExternalLink,
-  CloudCheck,
   CloudOff,
   Settings,
   ShieldCheck,
@@ -22,6 +20,7 @@ import { AssetType, PortfolioData, Asset, TelegramConfig } from './types';
 import { fetchMarketPrices, generateTelegramReport } from './services/geminiService';
 import { fetchPortfolioFromSupabase, saveAssetToSupabase, saveAllAssetsToSupabase, saveTelegramConfigToSupabase } from './services/supabaseService';
 import { sendTelegramMessage } from './services/telegramService';
+import { CONFIG } from './config';
 
 const COLORS = ['#F59E0B', '#3B82F6', '#10B981'];
 
@@ -37,19 +36,24 @@ const App: React.FC = () => {
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const [portfolio, setPortfolio] = useState<PortfolioData>({
-    monthlyContribution: 12000000,
-    telegramConfig: { botToken: '', chatId: '' },
+    monthlyContribution: CONFIG.portfolio.monthlyContribution,
+    telegramConfig: { 
+      botToken: CONFIG.telegram.defaultBotToken, 
+      chatId: CONFIG.telegram.defaultChatId 
+    },
     assets: {
-      GOLD: { type: 'GOLD', label: 'Vàng DOJI', amount: 0.5, currentPrice: 85000000, targetAllocation: 1/3 },
-      USDT: { type: 'USDT', label: 'USDT Binance', amount: 1700, currentPrice: 25400, targetAllocation: 1/3 },
-      SAVINGS: { type: 'SAVINGS', label: 'Tiết kiệm VND', amount: 45000000, currentPrice: 1, targetAllocation: 1/3 }
+      GOLD: { type: 'GOLD', label: 'Vàng DOJI', amount: 0.5, currentPrice: 85000000, targetAllocation: CONFIG.portfolio.defaultAllocation },
+      USDT: { type: 'USDT', label: 'USDT Binance', amount: 1700, currentPrice: 25400, targetAllocation: CONFIG.portfolio.defaultAllocation },
+      SAVINGS: { type: 'SAVINGS', label: 'Tiết kiệm VND', amount: 45000000, currentPrice: 1, targetAllocation: CONFIG.portfolio.defaultAllocation }
     }
   });
 
   useEffect(() => {
     const init = async () => {
-      const hasKeys = (process.env as any).SUPABASE_URL && (process.env as any).SUPABASE_ANON_KEY;
-      if (!hasKeys) { setIsCloudConfigured(false); return; }
+      if (!CONFIG.supabase.url || !CONFIG.supabase.anonKey) { 
+        setIsCloudConfigured(false); 
+        return; 
+      }
 
       setSyncing(true);
       const { assets, telegram } = await fetchPortfolioFromSupabase();
@@ -89,9 +93,10 @@ const App: React.FC = () => {
 
     const alerts: string[] = [];
     data.forEach(item => {
-      const deviation = Math.abs(item.actualPct - 33.33);
-      if (deviation > 5) {
-        alerts.push(`⚠️ ${item.name} lệch ${(item.actualPct).toFixed(1)}% (Mục tiêu 33.3%) - Cần tái cân bằng!`);
+      const targetPct = (CONFIG.portfolio.defaultAllocation * 100);
+      const deviation = Math.abs(item.actualPct - targetPct);
+      if (deviation > (CONFIG.portfolio.rebalanceThreshold * 100)) {
+        alerts.push(`⚠️ ${item.name} lệch ${(item.actualPct).toFixed(1)}% (Mục tiêu ${targetPct.toFixed(1)}%) - Cần tái cân bằng!`);
       }
     });
 
@@ -194,7 +199,6 @@ const App: React.FC = () => {
 
       <main className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          {/* Settings Section */}
           {showSettings && (
             <section className="bg-white border border-indigo-100 rounded-2xl p-6 shadow-sm ring-4 ring-indigo-50">
               <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
@@ -223,9 +227,6 @@ const App: React.FC = () => {
                   />
                 </div>
               </div>
-              <p className="mt-3 text-[11px] text-slate-400 italic">
-                * Dữ liệu cấu hình được mã hóa và lưu trữ riêng tư trên Supabase của bạn.
-              </p>
             </section>
           )}
 
@@ -294,7 +295,7 @@ const App: React.FC = () => {
           <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
               <h3 className="font-bold text-slate-800">Quản lý Số dư</h3>
-              <p className="text-[10px] font-bold text-indigo-500 uppercase">Target: 33.3% Mỗi loại</p>
+              <p className="text-[10px] font-bold text-indigo-500 uppercase">Target: {(CONFIG.portfolio.defaultAllocation * 100).toFixed(1)}% Mỗi loại</p>
             </div>
             <div className="divide-y divide-slate-50">
               {(Object.values(portfolio.assets) as Asset[]).map((asset) => (
@@ -389,21 +390,6 @@ const App: React.FC = () => {
               </div>
             </section>
           )}
-
-          <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm uppercase">
-              <Info size={16} className="text-indigo-500" />
-              Chiến lược đầu tư
-            </h3>
-            <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
-              <p>• <strong>Phân bổ:</strong> 12tr Vàng / 12tr Crypto / 12tr Tiền mặt hàng tháng.</p>
-              <p>• <strong>Cảnh báo:</strong> Hệ thống tự động báo động đỏ nếu bất kỳ tài sản nào vượt ngưỡng 38.3% hoặc dưới 28.3% tổng danh mục.</p>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-2">
-                <ShieldCheck size={14} className="text-indigo-600" />
-                <span className="font-bold text-indigo-900 uppercase text-[9px]">An toàn dữ liệu tuyệt đối</span>
-              </div>
-            </div>
-          </section>
         </div>
       </main>
     </div>

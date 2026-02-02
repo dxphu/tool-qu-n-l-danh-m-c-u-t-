@@ -1,15 +1,13 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Asset, AssetType, TelegramConfig } from '../types';
-
-const SUPABASE_URL = (process.env as any).SUPABASE_URL;
-const SUPABASE_ANON_KEY = (process.env as any).SUPABASE_ANON_KEY;
+import { CONFIG } from '../config';
 
 let supabase: SupabaseClient | null = null;
 
-if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== '' && SUPABASE_ANON_KEY !== '') {
+if (CONFIG.supabase.url && CONFIG.supabase.anonKey) {
   try {
-    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabase = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
   } catch (err) {
     console.error("Failed to initialize Supabase client:", err);
   }
@@ -43,6 +41,7 @@ export const fetchPortfolioFromSupabase = async (): Promise<{ assets: Record<Ass
 export const saveAssetToSupabase = async (asset: Asset) => {
   if (!supabase) return;
   try {
+    // Fix: Using asset.currentPrice instead of asset.current_price to match the Asset interface
     await supabase.from('portfolio_assets').upsert({
       asset_type: asset.type,
       amount: asset.amount,
